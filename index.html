@@ -1,0 +1,53 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>D3.js Interactive Visualization Demos</title>
+    <link rel="stylesheet" href="style.css">
+</head>
+<body>
+    <div class="container">
+        <header>
+            <h1>D3.js Interactive Visualization Demos</h1>
+            <p>Explore interactive data visualizations built with D3.js and TypeScript</p>
+        </header>
+
+        <nav class="demo-nav">
+            <button id="bar-chart-btn" class="nav-btn active">Bar Chart</button>
+            <button id="scatter-plot-btn" class="nav-btn">Scatter Plot</button>
+        </nav>
+
+        <main>
+            <div id="bar-chart-demo" class="demo-section active">
+                <h2>Interactive Bar Chart</h2>
+                <div class="controls">
+                    <label for="data-select">Dataset:</label>
+                    <select id="data-select">
+                        <option value="sales">Sales Data</option>
+                        <option value="population">Population Data</option>
+                        <option value="revenue">Revenue Data</option>
+                    </select>
+                </div>
+                <div id="bar-chart"></div>
+            </div>
+
+            <div id="scatter-plot-demo" class="demo-section">
+                <h2>Interactive Scatter Plot</h2>
+                <div class="controls">
+                    <label for="color-scale">Color Scale:</label>
+                    <select id="color-scale">
+                        <option value="category">By Category</option>
+                        <option value="value">By Value</option>
+                    </select>
+                </div>
+                <div id="scatter-plot"></div>
+            </div>
+        </main>
+
+        <div class="tooltip" id="tooltip"></div>
+    </div>
+    
+    <script type="module" src="/src/main.ts"></script>
+</body>
+</html>
