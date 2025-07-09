@@ -1,53 +1,108 @@
 <!DOCTYPE html>
 <html lang="en">
-<head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>D3.js Interactive Visualization Demos</title>
-    <link rel="stylesheet" href="style.css">
-</head>
-<body>
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Sleep & Health Analytics Dashboard</title>
+    <link rel="stylesheet" href="style.css" />
+  </head>
+  <body>
     <div class="container">
-        <header>
-            <h1>D3.js Interactive Visualization Demos</h1>
-            <p>Explore interactive data visualizations built with D3.js and TypeScript</p>
-        </header>
+      <header>
+        <h1>Sleep & Health Analytics Dashboard</h1>
+        <p>
+          Comprehensive analysis of sleep patterns and health correlations
+        </p>
+      </header>
 
-        <nav class="demo-nav">
-            <button id="bar-chart-btn" class="nav-btn active">Bar Chart</button>
-            <button id="scatter-plot-btn" class="nav-btn">Scatter Plot</button>
-        </nav>
+      <nav class="category-nav">
+        <button id="sleep-patterns-btn" class="nav-btn active">Sleep Pattern Analysis</button>
+        <button id="lifestyle-btn" class="nav-btn">Lifestyle Impact</button>
+        <button id="cardiovascular-btn" class="nav-btn">Cardiovascular Connection</button>
+        <button id="disorders-btn" class="nav-btn">Sleep Disorder Insights</button>
+      </nav>
 
-        <main>
-            <div id="bar-chart-demo" class="demo-section active">
-                <h2>Interactive Bar Chart</h2>
-                <div class="controls">
-                    <label for="data-select">Dataset:</label>
-                    <select id="data-select">
-                        <option value="sales">Sales Data</option>
-                        <option value="population">Population Data</option>
-                        <option value="revenue">Revenue Data</option>
-                    </select>
-                </div>
-                <div id="bar-chart"></div>
+      <main>
+        <!-- Sleep Pattern Analysis -->
+        <div id="sleep-patterns-section" class="category-section active">
+          <div class="chart-grid">
+            <div class="chart-card">
+              <h3>Sleep Duration vs Quality Heatmap</h3>
+              <p>Relationship between sleep duration and quality ratings</p>
+              <div id="duration-quality-heatmap"></div>
             </div>
-
-            <div id="scatter-plot-demo" class="demo-section">
-                <h2>Interactive Scatter Plot</h2>
-                <div class="controls">
-                    <label for="color-scale">Color Scale:</label>
-                    <select id="color-scale">
-                        <option value="category">By Category</option>
-                        <option value="value">By Value</option>
-                    </select>
-                </div>
-                <div id="scatter-plot"></div>
+            <div class="chart-card">
+              <h3>Sleep Quality Distribution by Demographics</h3>
+              <div class="controls">
+                <label for="demographic-select">Group by:</label>
+                <select id="demographic-select">
+                  <option value="age">Age Groups</option>
+                  <option value="gender">Gender</option>
+                  <option value="occupation">Occupation</option>
+                </select>
+              </div>
+              <div id="quality-demographics"></div>
             </div>
-        </main>
+          </div>
+        </div>
 
-        <div class="tooltip" id="tooltip"></div>
+        <!-- Lifestyle Impact -->
+        <div id="lifestyle-section" class="category-section">
+          <div class="chart-grid">
+            <div class="chart-card">
+              <h3>Physical Activity Sweet Spot Analysis</h3>
+              <p>Optimal activity range for better sleep quality</p>
+              <div id="activity-sweetspot"></div>
+            </div>
+            <div class="chart-card">
+              <h3>Stress-Sleep-Steps Triangle</h3>
+              <p>Interplay between stress levels, sleep quality, and daily steps</p>
+              <div id="stress-sleep-steps"></div>
+            </div>
+            <div class="chart-card full-width">
+              <h3>BMI Category Sleep Profile</h3>
+              <p>Sleep quality distributions within each BMI category</p>
+              <div id="bmi-sleep-profile"></div>
+            </div>
+          </div>
+        </div>
+
+        <!-- Cardiovascular Connection -->
+        <div id="cardiovascular-section" class="category-section">
+          <div class="chart-grid">
+            <div class="chart-card">
+              <h3>Heart Rate Sleep Correlation Matrix</h3>
+              <p>Relationships between heart rate, blood pressure, and sleep</p>
+              <div id="correlation-matrix"></div>
+            </div>
+            <div class="chart-card">
+              <h3>Blood Pressure Sleep Patterns</h3>
+              <p>BP trends across different sleep duration ranges</p>
+              <div id="bp-sleep-patterns"></div>
+            </div>
+          </div>
+        </div>
+
+        <!-- Sleep Disorder Insights -->
+        <div id="disorders-section" class="category-section">
+          <div class="chart-grid">
+            <div class="chart-card">
+              <h3>Disorder Prediction Dashboard</h3>
+              <p>Health metric profiles for each sleep disorder</p>
+              <div id="disorder-dashboard"></div>
+            </div>
+            <div class="chart-card">
+              <h3>Occupational Sleep Risk Assessment</h3>
+              <p>Sleep disorder prevalence by occupation</p>
+              <div id="occupational-risk"></div>
+            </div>
+          </div>
+        </div>
+      </main>
+
+      <div class="tooltip" id="tooltip"></div>
     </div>
-    
+
     <script type="module" src="/src/main.ts"></script>
-</body>
+  </body>
 </html>

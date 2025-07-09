@@ -12,7 +12,7 @@ body {
 }
 
 .container {
-    max-width: 1200px;
+    max-width: 1400px;
     margin: 0 auto;
     padding: 20px;
 }
@@ -33,7 +33,7 @@ header p {
     font-size: 1.1rem;
 }
 
-.demo-nav {
+.demo-nav, .category-nav {
     display: flex;
     justify-content: center;
     gap: 10px;
@@ -62,15 +62,15 @@ header p {
     color: white;
 }
 
-.demo-section {
+.demo-section, .category-section {
     display: none;
     background: white;
     border-radius: 8px;
-    padding: 30px;
+    padding: 40px;
     box-shadow: 0 2px 10px rgba(0,0,0,0.1);
 }
 
-.demo-section.active {
+.demo-section.active, .category-section.active {
     display: block;
 }
 
@@ -102,12 +102,52 @@ header p {
     background: white;
 }
 
-#bar-chart, #scatter-plot {
-    width: 100%;
-    min-height: 400px;
+.chart-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(600px, 1fr));
+    gap: 30px;
+    margin-bottom: 30px;
+}
+
+.chart-card {
+    background: white;
     border: 1px solid #e9ecef;
+    border-radius: 8px;
+    padding: 30px;
+    box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+}
+
+.chart-card.full-width {
+    grid-column: 1 / -1;
+}
+
+.chart-card h3 {
+    color: #2c3e50;
+    margin-bottom: 8px;
+    font-size: 1.2rem;
+}
+
+.chart-card p {
+    color: #6c757d;
+    margin-bottom: 15px;
+    font-size: 0.9rem;
+}
+
+#bar-chart, #scatter-plot, .chart-card > div:last-child {
+    width: 100%;
+    min-height: 500px;
     border-radius: 6px;
     background: white;
+    margin-top: 15px;
+    overflow: visible;
+}
+
+/* Responsive SVG container */
+.chart-card svg {
+    width: 100%;
+    height: auto;
+    max-width: 100%;
+    display: block;
 }
 
 .tooltip {
@@ -155,4 +195,45 @@ header p {
 .dot:hover {
     r: 6;
     stroke-width: 2px;
+}
+
+/* Color scale bars and legend styling */
+.color-scale {
+    margin: 20px 0;
+    padding: 15px;
+    background: #f8f9fa;
+    border-radius: 6px;
+}
+
+.color-scale text {
+    font-size: 12px;
+    font-weight: 500;
+}
+
+.legend {
+    margin-top: 20px;
+    padding: 15px;
+    background: #f8f9fa;
+    border-radius: 6px;
+}
+
+.legend-item {
+    display: inline-block;
+    margin-right: 20px;
+    margin-bottom: 10px;
+}
+
+.legend-color {
+    width: 16px;
+    height: 16px;
+    display: inline-block;
+    margin-right: 8px;
+    border-radius: 3px;
+    vertical-align: middle;
+}
+
+.legend-label {
+    font-size: 13px;
+    font-weight: 500;
+    vertical-align: middle;
 }

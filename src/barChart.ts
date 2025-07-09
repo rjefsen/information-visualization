@@ -11,14 +11,14 @@ export class BarChart {
     private svg: d3.Selection<SVGSVGElement, unknown, HTMLElement, any>;
     private width: number;
     private height: number;
-    private margin = { top: 20, right: 30, bottom: 40, left: 60 };
+    private margin = { top: 40, right: 100, bottom: 80, left: 80 };
     private data: BarData[] = [];
     private datasets: { [key: string]: BarData[] };
 
     constructor(selector: string) {
         this.container = d3.select(selector);
-        this.width = 800 - this.margin.left - this.margin.right;
-        this.height = 400 - this.margin.top - this.margin.bottom;
+        this.width = 650 - this.margin.left - this.margin.right;
+        this.height = 500 - this.margin.top - this.margin.bottom;
         
         this.setupSVG();
         this.initializeData();
@@ -31,35 +31,68 @@ export class BarChart {
             .attr('height', this.height + this.margin.top + this.margin.bottom);
     }
 
-    private initializeData(): void {
-        this.datasets = {
-            sales: [
-                { label: 'Q1', value: 12000 },
-                { label: 'Q2', value: 15000 },
-                { label: 'Q3', value: 18000 },
-                { label: 'Q4', value: 21000 },
-                { label: 'Q5', value: 16000 }
-            ],
-            population: [
-                { label: 'NYC', value: 8400000 },
-                { label: 'LA', value: 3900000 },
-                { label: 'Chicago', value: 2700000 },
-                { label: 'Houston', value: 2300000 },
-                { label: 'Phoenix', value: 1700000 }
-            ],
-            revenue: [
-                { label: 'Product A', value: 45000 },
-                { label: 'Product B', value: 38000 },
-                { label: 'Product C', value: 52000 },
-                { label: 'Product D', value: 29000 },
-                { label: 'Product E', value: 41000 }
-            ]
-        };
-        
-        this.data = this.datasets.sales;
+    private async initializeData(): Promise<void> {
+        try {
+            const csvData = await d3.csv('/data/Health and Sleep relation 2024/Sleep_health_and_lifestyle_dataset.csv');
+            
+            const sleepByOccupation = d3.rollup(
+                csvData,
+                v => d3.mean(v, d => +d['Sleep Duration']),
+                d => d.Occupation
+            );
+            
+            const stressByOccupation = d3.rollup(
+                csvData,
+                v => d3.mean(v, d => +d['Stress Level']),
+                d => d.Occupation
+            );
+            
+            const physicalActivityByOccupation = d3.rollup(
+                csvData,
+                v => d3.mean(v, d => +d['Physical Activity Level']),
+                d => d.Occupation
+            );
+
+            this.datasets = {
+                'sleep-duration': Array.from(sleepByOccupation, ([occupation, avgSleep]) => ({
+                    label: occupation,
+                    value: avgSleep || 0
+                })),
+                'stress-level': Array.from(stressByOccupation, ([occupation, avgStress]) => ({
+                    label: occupation,
+                    value: avgStress || 0
+                })),
+                'physical-activity': Array.from(physicalActivityByOccupation, ([occupation, avgActivity]) => ({
+                    label: occupation,
+                    value: avgActivity || 0
+                }))
+            };
+            
+            this.data = this.datasets['sleep-duration'];
+        } catch (error) {
+            console.error('Error loading CSV data:', error);
+            this.datasets = {
+                'sleep-duration': [{ label: 'Error loading data', value: 0 }]
+            };
+            this.data = this.datasets['sleep-duration'];
+        }
     }
 
-    public render(): void {
+    public async render(): Promise<void> {
+        if (Object.keys(this.datasets).length === 0) {
+            await this.initializeData();
+        }
+        this.renderChart();
+    }
+
+    public async updateData(datasetKey: string): Promise<void> {
+        if (this.datasets[datasetKey]) {
+            this.data = this.datasets[datasetKey];
+            this.renderChart();
+        }
+    }
+
+    private renderChart(): void {
         this.svg.selectAll('*').remove();
 
         const g = this.svg.append('g')
@@ -93,7 +126,7 @@ export class BarChart {
             .attr('x', 0 - (this.height / 2))
             .attr('dy', '1em')
             .style('text-anchor', 'middle')
-            .text('Value');
+            .text('Average Value');
 
         const tooltip = d3.select('#tooltip');
 
@@ -121,12 +154,5 @@ export class BarChart {
         .on('mouseout', () => {
             tooltip.classed('visible', false);
         });
-    }
-
-    public updateData(datasetKey: string): void {
-        if (this.datasets[datasetKey]) {
-            this.data = this.datasets[datasetKey];
-            this.render();
-        }
     }
 }
