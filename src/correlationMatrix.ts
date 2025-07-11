@@ -1,4 +1,5 @@
 import * as d3 from 'd3';
+import { ScatterPlot } from './scatterPlot';
 
 interface CorrelationData {
     variable1: string;
@@ -11,12 +12,13 @@ export class CorrelationMatrix {
     private svg: d3.Selection<SVGSVGElement, unknown, HTMLElement, any>;
     private width: number;
     private height: number;
-    private margin = { top: 80, right: 80, bottom: 80, left: 80 };
+    private margin = { top: 80, right: 80, bottom: 140, left: 80 };
     private data: CorrelationData[] = [];
     private variables: string[] = [];
     private correlationMatrix: number[][] = [];
+    private scatterPlot: ScatterPlot;
 
-    constructor(selector: string) {
+    constructor(selector: string, scatterSelector: string = '#correlation-scatter') {
         this.container = d3.select(selector);
         const containerRect = (this.container.node() as HTMLElement).getBoundingClientRect();
         const size = Math.min(Math.max(400, containerRect.width - this.margin.left - this.margin.right), 
@@ -24,6 +26,7 @@ export class CorrelationMatrix {
         this.width = size;
         this.height = size;
         
+        this.scatterPlot = new ScatterPlot(scatterSelector);
         this.setupSVG();
         this.initializeData();
     }
@@ -132,7 +135,7 @@ export class CorrelationMatrix {
             .attr('dx', '-.8em')
             .attr('dy', '.15em')
             .attr('transform', 'rotate(-45)')
-            .style('font-size', '11px');
+            .style('font-size', '10px');
 
         g.append('g')
             .attr('class', 'y-axis')
@@ -181,29 +184,37 @@ export class CorrelationMatrix {
             .delay((d, i) => i * 20 + 500)
             .attr('opacity', 1);
 
-        cells.on('mouseover', (event, d) => {
-            const strength = Math.abs(d.correlation);
-            let description = '';
-            if (strength > 0.7) description = 'Strong';
-            else if (strength > 0.4) description = 'Moderate';
-            else if (strength > 0.2) description = 'Weak';
-            else description = 'Very weak';
-            
-            const direction = d.correlation > 0 ? 'positive' : 'negative';
+        cells.style('cursor', 'pointer')
+            .on('mouseover', (event, d) => {
+                const strength = Math.abs(d.correlation);
+                let description = '';
+                if (strength > 0.7) description = 'Strong';
+                else if (strength > 0.4) description = 'Moderate';
+                else if (strength > 0.2) description = 'Weak';
+                else description = 'Very weak';
+                
+                const direction = d.correlation > 0 ? 'positive' : 'negative';
 
-            tooltip.classed('visible', true)
-                .html(`
-                    <strong>${d.variable1}</strong><br/>
-                    <strong>vs ${d.variable2}</strong><br/>
-                    Correlation: ${d.correlation.toFixed(3)}<br/>
-                    ${description} ${direction} correlation
-                `)
-                .style('left', (event.pageX + 10) + 'px')
-                .style('top', (event.pageY - 10) + 'px');
-        })
-        .on('mouseout', () => {
-            tooltip.classed('visible', false);
-        });
+                tooltip.classed('visible', true)
+                    .html(`
+                        <strong>${d.variable1}</strong><br/>
+                        <strong>vs ${d.variable2}</strong><br/>
+                        Correlation: ${d.correlation.toFixed(3)}<br/>
+                        ${description} ${direction} correlation<br/>
+                        <em>Click to view scatterplot</em>
+                    `)
+                    .style('left', (event.pageX + 10) + 'px')
+                    .style('top', (event.pageY - 10) + 'px');
+            })
+            .on('mouseout', () => {
+                tooltip.classed('visible', false);
+            })
+            .on('click', async (event, d) => {
+                if (d.variable1 !== d.variable2) {
+                    await this.scatterPlot.loadData(d.variable1, d.variable2);
+                    await this.scatterPlot.render();
+                }
+            });
 
         this.addColorLegend(g);
         this.addTitle(g);
@@ -215,7 +226,7 @@ export class CorrelationMatrix {
         
         const legend = g.append('g')
             .attr('class', 'legend')
-            .attr('transform', `translate(${(this.width - legendWidth) / 2}, ${this.height + 50})`);
+            .attr('transform', `translate(${(this.width - legendWidth) / 2}, ${this.height + 60})`);
 
         const legendScale = d3.scaleLinear()
             .domain([-1, 1])
@@ -226,6 +237,7 @@ export class CorrelationMatrix {
             .tickSize(6)
             .tickFormat(d3.format('.1f'));
 
+        this.svg.select('defs').remove();
         const gradient = this.svg.append('defs')
             .append('linearGradient')
             .attr('id', 'correlation-gradient')
@@ -251,23 +263,23 @@ export class CorrelationMatrix {
 
         legend.append('text')
             .attr('x', 0)
-            .attr('y', legendHeight + 35)
+            .attr('y', legendHeight + 25)
             .style('text-anchor', 'start')
-            .style('font-size', '11px')
+            .style('font-size', '10px')
             .text('Strong Negative');
 
         legend.append('text')
             .attr('x', legendWidth)
-            .attr('y', legendHeight + 35)
+            .attr('y', legendHeight + 25)
             .style('text-anchor', 'end')
-            .style('font-size', '11px')
+            .style('font-size', '10px')
             .text('Strong Positive');
 
         legend.append('text')
             .attr('x', legendWidth / 2)
-            .attr('y', legendHeight + 35)
+            .attr('y', legendHeight + 25)
             .style('text-anchor', 'middle')
-            .style('font-size', '11px')
+            .style('font-size', '10px')
             .text('No Correlation');
     }
 

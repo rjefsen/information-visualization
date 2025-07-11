@@ -135,7 +135,7 @@ header p {
 
 #bar-chart, #scatter-plot, .chart-card > div:last-child {
     width: 100%;
-    min-height: 500px;
+    min-height: 400px;
     border-radius: 6px;
     background: white;
     margin-top: 15px;

@@ -11,7 +11,7 @@ export class SleepQualityDemographics {
     private svg: d3.Selection<SVGSVGElement, unknown, HTMLElement, any>;
     private width: number;
     private height: number;
-    private margin = { top: 40, right: 100, bottom: 80, left: 80 };
+    private margin = { top: 40, right: 100, bottom: 120, left: 80 };
     private data: DemographicData[] = [];
     private currentGrouping: 'age' | 'gender' | 'occupation' = 'age';
 
@@ -104,7 +104,8 @@ export class SleepQualityDemographics {
             .style('text-anchor', 'end')
             .attr('dx', '-.8em')
             .attr('dy', '.15em')
-            .attr('transform', 'rotate(-45)');
+            .attr('transform', 'rotate(-45)')
+            .style('font-size', '12px');
 
         g.append('g')
             .attr('class', 'y-axis')
@@ -112,8 +113,9 @@ export class SleepQualityDemographics {
 
         g.append('text')
             .attr('class', 'axis-label')
-            .attr('transform', `translate(${this.width / 2}, ${this.height + 60})`)
+            .attr('transform', `translate(${this.width / 2}, ${this.height + 100})`)
             .style('text-anchor', 'middle')
+            .style('font-size', '14px')
             .text(this.currentGrouping === 'age' ? 'Age Groups' : 
                   this.currentGrouping === 'gender' ? 'Gender' : 'Occupation');
 
@@ -125,18 +127,32 @@ export class SleepQualityDemographics {
             .style('text-anchor', 'middle')
             .text('Sleep Quality (1-10)');
 
-        const tooltip = d3.select('#tooltip');
+        let tooltip = d3.select('#tooltip');
+        if (tooltip.empty()) {
+            tooltip = d3.select('body').append('div')
+                .attr('id', 'tooltip')
+                .attr('class', 'tooltip')
+                .style('position', 'absolute')
+                .style('background', 'rgba(0, 0, 0, 0.8)')
+                .style('color', 'white')
+                .style('padding', '10px')
+                .style('border-radius', '5px')
+                .style('pointer-events', 'none')
+                .style('opacity', 0)
+                .style('z-index', '1000')
+                .style('font-size', '12px');
+        }
 
         groups.forEach(group => {
             const groupData = groupedData.get(group) || [];
             const qualities = groupData.map(d => d.quality);
             
-            const binWidth = xScale.bandwidth() * 0.8;
-            const binHeight = this.height / 20;
+            const binWidth = xScale.bandwidth() * 0.9;
+            const binHeight = this.height / 30;
             
             const histogram = d3.histogram()
                 .domain([0, 10])
-                .thresholds(10);
+                .thresholds(15);
             
             const bins = histogram(qualities);
             const maxBinLength = d3.max(bins, d => d.length) || 1;
@@ -163,7 +179,10 @@ export class SleepQualityDemographics {
                     .attr('width', 0)
                     .attr('height', binHeight)
                     .attr('fill', colorScale(group))
-                    .attr('opacity', 0.7)
+                    .attr('opacity', 0.75)
+                    .attr('rx', 1)
+                    .attr('ry', 1)
+                    .style('pointer-events', 'none')
                     .transition()
                     .duration(800)
                     .delay(groups.indexOf(group) * 100)
@@ -181,34 +200,36 @@ export class SleepQualityDemographics {
                 .attr('y1', yScale(median))
                 .attr('y2', yScale(median))
                 .attr('stroke', '#333')
-                .attr('stroke-width', 2)
+                .attr('stroke-width', 3)
                 .attr('opacity', 0)
                 .transition()
                 .duration(800)
                 .delay(groups.indexOf(group) * 100)
-                .attr('opacity', 1);
+                .attr('opacity', 0.9);
 
+            // Add hover area for entire violin
             groupG.append('rect')
-                .attr('class', 'tooltip-area')
+                .attr('class', 'violin-hover-area')
                 .attr('x', -xScale.bandwidth() / 2)
                 .attr('y', 0)
                 .attr('width', xScale.bandwidth())
                 .attr('height', this.height)
                 .attr('fill', 'transparent')
+                .style('cursor', 'pointer')
+                .style('pointer-events', 'all')
                 .on('mouseover', (event) => {
-                    tooltip.classed('visible', true)
+                    tooltip.style('opacity', 0.9)
                         .html(`
                             <strong>${group}</strong><br/>
-                            Count: ${qualities.length}<br/>
-                            Median Quality: ${median.toFixed(1)}<br/>
-                            Q1: ${q1.toFixed(1)}, Q3: ${q3.toFixed(1)}<br/>
-                            Range: ${d3.min(qualities)}-${d3.max(qualities)}
+                            Count: ${qualities.length} people<br/>
+                            Median: ${median.toFixed(1)}<br/>
+                            Range: ${d3.min(qualities)} - ${d3.max(qualities)}
                         `)
                         .style('left', (event.pageX + 10) + 'px')
                         .style('top', (event.pageY - 10) + 'px');
                 })
                 .on('mouseout', () => {
-                    tooltip.classed('visible', false);
+                    tooltip.style('opacity', 0);
                 });
         });
     }

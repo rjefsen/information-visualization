@@ -11,14 +11,13 @@ export class SleepDurationQualityHeatmap {
     private svg: d3.Selection<SVGSVGElement, unknown, HTMLElement, any>;
     private width: number;
     private height: number;
-    private margin = { top: 20, right: 100, bottom: 60, left: 60 };
+    private margin = { top: 20, right: 100, bottom: 70, left: 60 };
     private data: HeatmapData[] = [];
 
     constructor(selector: string) {
         this.container = d3.select(selector);
-        const containerRect = (this.container.node() as HTMLElement).getBoundingClientRect();
-        this.width = Math.max(500, containerRect.width - this.margin.left - this.margin.right);
-        this.height = Math.max(350, containerRect.height - this.margin.top - this.margin.bottom);
+        this.width = 500;
+        this.height = 350;
         
         this.setupSVG();
         this.initializeData();
@@ -84,30 +83,75 @@ export class SleepDurationQualityHeatmap {
         const colorScale = d3.scaleSequential(d3.interpolateReds)
             .domain([0, d3.max(this.data, d => d.count) || 1]);
 
+        const xAxis = d3.axisBottom(xScale)
+            .tickFormat(d => d + 'h');
+
         g.append('g')
             .attr('class', 'x-axis')
             .attr('transform', `translate(0,${this.height})`)
-            .call(d3.axisBottom(xScale));
+            .call(xAxis)
+            .selectAll('text')
+            .style('font-size', '12px')
+            .style('fill', '#333');
+
+        g.select('.x-axis .domain')
+            .style('stroke', '#333');
+
+        g.selectAll('.x-axis line')
+            .style('stroke', '#333');
+
+        const yAxis = d3.axisLeft(yScale)
+            .tickFormat(d => d);
 
         g.append('g')
             .attr('class', 'y-axis')
-            .call(d3.axisLeft(yScale));
+            .call(yAxis)
+            .selectAll('text')
+            .style('font-size', '12px')
+            .style('fill', '#333');
 
-        g.append('text')
-            .attr('class', 'axis-label')
-            .attr('transform', `translate(${this.width / 2}, ${this.height + 45})`)
+        g.select('.y-axis .domain')
+            .style('stroke', '#333');
+
+        g.selectAll('.y-axis line')
+            .style('stroke', '#333');
+
+        // Add x-axis title directly to SVG
+        this.svg.append('text')
+            .attr('class', 'x-axis-label')
+            .attr('x', (this.width + this.margin.left + this.margin.right) / 2)
+            .attr('y', this.height + this.margin.top + this.margin.bottom - 10)
             .style('text-anchor', 'middle')
+            .style('font-size', '16px')
+            .style('font-weight', 'bold')
+            .style('fill', 'red')
             .text('Sleep Duration (hours)');
 
         g.append('text')
-            .attr('class', 'axis-label')
+            .attr('class', 'y-axis-label')
             .attr('transform', 'rotate(-90)')
             .attr('y', 0 - this.margin.left + 15)
             .attr('x', 0 - (this.height / 2))
             .style('text-anchor', 'middle')
+            .style('font-size', '14px')
+            .style('font-weight', 'bold')
+            .style('fill', '#333')
             .text('Sleep Quality (1-10)');
 
-        const tooltip = d3.select('#tooltip');
+        let tooltip = d3.select('#tooltip');
+        if (tooltip.empty()) {
+            tooltip = d3.select('body').append('div')
+                .attr('id', 'tooltip')
+                .attr('class', 'tooltip')
+                .style('position', 'absolute')
+                .style('background', 'rgba(0, 0, 0, 0.8)')
+                .style('color', 'white')
+                .style('padding', '10px')
+                .style('border-radius', '5px')
+                .style('pointer-events', 'none')
+                .style('opacity', 0)
+                .style('z-index', '1000');
+        }
 
         const cells = g.selectAll('.cell')
             .data(this.data)
@@ -131,10 +175,14 @@ export class SleepDurationQualityHeatmap {
             d3.select(event.currentTarget)
                 .transition()
                 .duration(200)
-                .attr('opacity', 0.8);
+                .attr('stroke-width', 2)
+                .attr('stroke', '#333');
 
-            tooltip.classed('visible', true)
-                .html(`
+            tooltip.transition()
+                .duration(200)
+                .style('opacity', 0.9);
+            
+            tooltip.html(`
                     <strong>Sleep Pattern</strong><br/>
                     Duration: ${d.duration} hours<br/>
                     Quality: ${d.quality}/10<br/>
@@ -147,9 +195,12 @@ export class SleepDurationQualityHeatmap {
             d3.select(event.currentTarget)
                 .transition()
                 .duration(200)
-                .attr('opacity', 1);
+                .attr('stroke-width', 1)
+                .attr('stroke', '#fff');
 
-            tooltip.classed('visible', false);
+            tooltip.transition()
+                .duration(500)
+                .style('opacity', 0);
         });
 
         this.addColorLegend(g, colorScale);
@@ -200,6 +251,6 @@ export class SleepDurationQualityHeatmap {
             .attr('transform', `rotate(90, ${legendWidth + 35}, ${legendHeight / 2})`)
             .style('text-anchor', 'middle')
             .style('font-size', '12px')
-            .text('Frequency');
+            .text('Number of People');
     }
 }

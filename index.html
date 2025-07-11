@@ -17,9 +17,9 @@
 
       <nav class="category-nav">
         <button id="sleep-patterns-btn" class="nav-btn active">Sleep Pattern Analysis</button>
-        <button id="lifestyle-btn" class="nav-btn">Lifestyle Impact</button>
-        <button id="cardiovascular-btn" class="nav-btn">Cardiovascular Connection</button>
-        <button id="disorders-btn" class="nav-btn">Sleep Disorder Insights</button>
+        <!-- <button id="lifestyle-btn" class="nav-btn">Lifestyle Impact</button> -->
+        <button id="cardiovascular-btn" class="nav-btn">Correlations</button>
+        <!-- <button id="disorders-btn" class="nav-btn">Sleep Disorder Insights</button> -->
       </nav>
 
       <main>
@@ -47,7 +47,7 @@
         </div>
 
         <!-- Lifestyle Impact -->
-        <div id="lifestyle-section" class="category-section">
+        <!-- <div id="lifestyle-section" class="category-section">
           <div class="chart-grid">
             <div class="chart-card">
               <h3>Physical Activity Sweet Spot Analysis</h3>
@@ -65,7 +65,7 @@
               <div id="bmi-sleep-profile"></div>
             </div>
           </div>
-        </div>
+        </div> -->
 
         <!-- Cardiovascular Connection -->
         <div id="cardiovascular-section" class="category-section">
@@ -76,6 +76,11 @@
               <div id="correlation-matrix"></div>
             </div>
             <div class="chart-card">
+              <h3>Correlation Detail</h3>
+              <p>Click on a correlation cell to see the scatterplot</p>
+              <div id="correlation-scatter"></div>
+            </div>
+            <div class="chart-card">
               <h3>Blood Pressure Sleep Patterns</h3>
               <p>BP trends across different sleep duration ranges</p>
               <div id="bp-sleep-patterns"></div>
@@ -84,7 +89,7 @@
         </div>
 
         <!-- Sleep Disorder Insights -->
-        <div id="disorders-section" class="category-section">
+        <!-- <div id="disorders-section" class="category-section">
           <div class="chart-grid">
             <div class="chart-card">
               <h3>Disorder Prediction Dashboard</h3>
@@ -97,7 +102,7 @@
               <div id="occupational-risk"></div>
             </div>
           </div>
-        </div>
+        </div> -->
       </main>
 
       <div class="tooltip" id="tooltip"></div>
