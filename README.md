@@ -22,3 +22,5 @@ Open `http://localhost:3000` in your browser.
 - D3.js v7
 - TypeScript
 - Vite
+
+Made fiddling around with claude code
