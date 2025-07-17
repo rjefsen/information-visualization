@@ -1,104 +1,96 @@
 import * as d3 from 'd3';
-import { BarChart } from './barChart';
-import { SleepDurationQualityHeatmap } from './sleepDurationQualityHeatmap';
-import { SleepQualityDemographics } from './sleepQualityDemographics';
-// import { ActivitySweetSpot } from './activitySweetSpot';
 import { CorrelationMatrix } from './correlationMatrix';
-// import { StressSleepSteps } from './stressSleepSteps';
-// import { BMISleepProfile } from './bmiSleepProfile';
-import { BloodPressureSleepPatterns } from './bloodPressureSleepPatterns';
-// import { DisorderDashboard } from './disorderDashboard';
-// import { OccupationalRisk } from './occupationalRisk';
+import { CategoryHeatmap } from './categoryHeatmap';
 
 class App {
-    // private barChart: BarChart;
-    private sleepDurationQualityHeatmap: SleepDurationQualityHeatmap;
-    private sleepQualityDemographics: SleepQualityDemographics;
-    // private activitySweetSpot: ActivitySweetSpot;
-    private correlationMatrix: CorrelationMatrix;
-    // private stressSleepSteps: StressSleepSteps;
-    // private bmiSleepProfile: BMISleepProfile;
-    private bloodPressureSleepPatterns: BloodPressureSleepPatterns;
-    // private disorderDashboard: DisorderDashboard;
-    // private occupationalRisk: OccupationalRisk;
+    private correlationMatrix: CorrelationMatrix | null = null;
+    private categoryHeatmap: CategoryHeatmap | null = null;
+    private selectedCategories: string[] = [];
 
     constructor() {
-        // this.barChart = new BarChart('#bar-chart');
-        this.sleepDurationQualityHeatmap = new SleepDurationQualityHeatmap('#duration-quality-heatmap');
-        this.sleepQualityDemographics = new SleepQualityDemographics('#quality-demographics');
-        // this.activitySweetSpot = new ActivitySweetSpot('#activity-sweetspot');
-        this.correlationMatrix = new CorrelationMatrix('#correlation-matrix', '#correlation-scatter');
-        // this.stressSleepSteps = new StressSleepSteps('#stress-sleep-steps');
-        // this.bmiSleepProfile = new BMISleepProfile('#bmi-sleep-profile');
-        this.bloodPressureSleepPatterns = new BloodPressureSleepPatterns('#bp-sleep-patterns');
-        // this.disorderDashboard = new DisorderDashboard('#disorder-dashboard');
-        // this.occupationalRisk = new OccupationalRisk('#occupational-risk');
-        
-        this.initializeNavigation();
-        this.initializeControls();
-        this.initializeApp();
+        // Add a small delay to ensure DOM is fully loaded
+        setTimeout(() => {
+            this.correlationMatrix = new CorrelationMatrix('#correlation-matrix', '#correlation-scatter');
+            this.categoryHeatmap = new CategoryHeatmap('#category-heatmap');
+            
+            this.initializeCategorySelection();
+            this.initializeApp();
+        }, 100);
     }
 
     private async initializeApp(): Promise<void> {
-        await this.sleepDurationQualityHeatmap.render();
-        await this.sleepQualityDemographics.render();
+        console.log('Initializing app...');
+        try {
+            if (this.correlationMatrix) {
+                await this.correlationMatrix.render();
+                console.log('Correlation matrix rendered');
+            }
+            if (this.categoryHeatmap) {
+                this.categoryHeatmap.updateCategories('Sleep Duration', 'Quality of Sleep');
+                console.log('Category heatmap rendered');
+            }
+        } catch (error) {
+            console.error('Error initializing app:', error);
+        }
     }
 
-    private initializeNavigation(): void {
-        const sleepPatternsBtn = d3.select('#sleep-patterns-btn');
-        // const lifestyleBtn = d3.select('#lifestyle-btn');
-        const cardiovascularBtn = d3.select('#cardiovascular-btn');
-        // const disordersBtn = d3.select('#disorders-btn');
+    private initializeCategorySelection(): void {
+        const categoryButtons = d3.selectAll('.category-btn');
+        const category1Display = d3.select('#category1-display');
+        const category2Display = d3.select('#category2-display');
+        const heatmapTitle = d3.select('#heatmap-title');
+        const heatmapDescription = d3.select('#heatmap-description');
 
-        const sleepPatternsSection = d3.select('#sleep-patterns-section');
-        // const lifestyleSection = d3.select('#lifestyle-section');
-        const cardiovascularSection = d3.select('#cardiovascular-section');
-        // const disordersSection = d3.select('#disorders-section');
+        console.log('Category buttons found:', categoryButtons.size());
+        console.log('Category displays found:', category1Display.size(), category2Display.size());
 
-        sleepPatternsBtn.on('click', async () => {
-            this.switchSection(sleepPatternsBtn, sleepPatternsSection);
-            await this.sleepDurationQualityHeatmap.render();
-            await this.sleepQualityDemographics.render();
+        categoryButtons.on('click', (event, d) => {
+            const target = event.target as HTMLElement;
+            const category = target.dataset.category;
+            
+            if (!category) return;
+            
+            if (this.selectedCategories.length === 0) {
+                this.selectedCategories.push(category);
+                category1Display.text(category);
+                target.classList.add('selected');
+            } else if (this.selectedCategories.length === 1) {
+                if (this.selectedCategories[0] === category) {
+                    return;
+                }
+                this.selectedCategories.push(category);
+                category2Display.text(category);
+                target.classList.add('selected');
+                
+                heatmapTitle.text(`${this.selectedCategories[0]} vs ${this.selectedCategories[1]} Correlation`);
+                heatmapDescription.text(`Distribution heatmap showing the relationship between ${this.selectedCategories[0]} and ${this.selectedCategories[1]}`);
+                
+                if (this.categoryHeatmap) {
+                    this.categoryHeatmap.updateCategories(this.selectedCategories[0], this.selectedCategories[1]);
+                }
+            } else {
+                categoryButtons.classed('selected', false);
+                this.selectedCategories = [category];
+                category1Display.text(category);
+                category2Display.text('Select second category');
+                heatmapTitle.text('Category Correlation Heatmap');
+                heatmapDescription.text('Select two categories above to see their detailed correlation');
+                target.classList.add('selected');
+                
+                if (this.categoryHeatmap) {
+                    this.categoryHeatmap.render();
+                }
+            }
         });
-
-        // lifestyleBtn.on('click', async () => {
-        //     this.switchSection(lifestyleBtn, lifestyleSection);
-        //     await this.activitySweetSpot.render();
-        //     await this.stressSleepSteps.render();
-        //     await this.bmiSleepProfile.render();
-        // });
-
-        cardiovascularBtn.on('click', async () => {
-            this.switchSection(cardiovascularBtn, cardiovascularSection);
-            await this.correlationMatrix.render();
-            await this.bloodPressureSleepPatterns.render();
-        });
-
-        // disordersBtn.on('click', async () => {
-        //     this.switchSection(disordersBtn, disordersSection);
-        //     await this.disorderDashboard.render();
-        //     await this.occupationalRisk.render();
-        // });
     }
 
-    private switchSection(activeBtn: d3.Selection<d3.BaseType, unknown, HTMLElement, any>, 
-                         activeSection: d3.Selection<d3.BaseType, unknown, HTMLElement, any>): void {
-        d3.selectAll('.nav-btn').classed('active', false);
-        d3.selectAll('.category-section').classed('active', false);
-        
-        activeBtn.classed('active', true);
-        activeSection.classed('active', true);
-    }
-
-    private initializeControls(): void {
-        const demographicSelect = d3.select('#demographic-select');
-        demographicSelect.on('change', async () => {
-            const selectedGrouping = (demographicSelect.node() as HTMLSelectElement).value as 'age' | 'gender' | 'occupation';
-            await this.sleepQualityDemographics.updateGrouping(selectedGrouping);
-        });
-    }
 }
 
 document.addEventListener('DOMContentLoaded', () => {
+    console.log('DOM loaded, checking elements...');
+    console.log('correlation-matrix div:', document.querySelector('#correlation-matrix'));
+    console.log('category-heatmap div:', document.querySelector('#category-heatmap'));
+    console.log('category buttons:', document.querySelectorAll('.category-btn').length);
+    
     new App();
 });

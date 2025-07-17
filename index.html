@@ -15,94 +15,50 @@
         </p>
       </header>
 
-      <nav class="category-nav">
-        <button id="sleep-patterns-btn" class="nav-btn active">Sleep Pattern Analysis</button>
-        <!-- <button id="lifestyle-btn" class="nav-btn">Lifestyle Impact</button> -->
-        <button id="cardiovascular-btn" class="nav-btn">Correlations</button>
-        <!-- <button id="disorders-btn" class="nav-btn">Sleep Disorder Insights</button> -->
-      </nav>
-
       <main>
-        <!-- Sleep Pattern Analysis -->
-        <div id="sleep-patterns-section" class="category-section active">
-          <div class="chart-grid">
-            <div class="chart-card">
-              <h3>Sleep Duration vs Quality Heatmap</h3>
-              <p>Relationship between sleep duration and quality ratings</p>
-              <div id="duration-quality-heatmap"></div>
-            </div>
-            <div class="chart-card">
-              <h3>Sleep Quality Distribution by Demographics</h3>
-              <div class="controls">
-                <label for="demographic-select">Group by:</label>
-                <select id="demographic-select">
-                  <option value="age">Age Groups</option>
-                  <option value="gender">Gender</option>
-                  <option value="occupation">Occupation</option>
-                </select>
-              </div>
-              <div id="quality-demographics"></div>
+        <div class="overview-section">
+          <div class="chart-card half-width">
+            <h3>Health Metrics Correlation Overview</h3>
+            <p>Click on any correlation cell to explore the relationship between two variables</p>
+            <div id="correlation-matrix"></div>
+          </div>
+          <div class="chart-card half-width">
+            <h3>Variable Relationship</h3>
+            <p id="scatter-description">Click on a correlation cell to see the scatterplot</p>
+            <div id="correlation-scatter"></div>
+            <div id="person-details" class="person-details" style="display: none;">
+              <h4>Person Details</h4>
+              <div id="person-info"></div>
             </div>
           </div>
         </div>
 
-        <!-- Lifestyle Impact -->
-        <!-- <div id="lifestyle-section" class="category-section">
-          <div class="chart-grid">
-            <div class="chart-card">
-              <h3>Physical Activity Sweet Spot Analysis</h3>
-              <p>Optimal activity range for better sleep quality</p>
-              <div id="activity-sweetspot"></div>
-            </div>
-            <div class="chart-card">
-              <h3>Stress-Sleep-Steps Triangle</h3>
-              <p>Interplay between stress levels, sleep quality, and daily steps</p>
-              <div id="stress-sleep-steps"></div>
-            </div>
-            <div class="chart-card full-width">
-              <h3>BMI Category Sleep Profile</h3>
-              <p>Sleep quality distributions within each BMI category</p>
-              <div id="bmi-sleep-profile"></div>
-            </div>
+        <div class="category-selection">
+          <h3>Explore Category Relationships</h3>
+          <p>Select two categories to see their detailed correlation heatmap</p>
+          <div class="category-buttons">
+            <button class="category-btn" data-category="Sleep Duration">Sleep Duration</button>
+            <button class="category-btn" data-category="Quality of Sleep">Sleep Quality</button>
+            <button class="category-btn" data-category="Physical Activity Level">Physical Activity</button>
+            <button class="category-btn" data-category="Stress Level">Stress Level</button>
+            <button class="category-btn" data-category="Heart Rate">Heart Rate</button>
+            <button class="category-btn" data-category="Daily Steps">Daily Steps</button>
           </div>
-        </div> -->
-
-        <!-- Cardiovascular Connection -->
-        <div id="cardiovascular-section" class="category-section">
-          <div class="chart-grid">
-            <div class="chart-card">
-              <h3>Heart Rate Sleep Correlation Matrix</h3>
-              <p>Relationships between heart rate, blood pressure, and sleep</p>
-              <div id="correlation-matrix"></div>
-            </div>
-            <div class="chart-card">
-              <h3>Correlation Detail</h3>
-              <p>Click on a correlation cell to see the scatterplot</p>
-              <div id="correlation-scatter"></div>
-            </div>
-            <div class="chart-card">
-              <h3>Blood Pressure Sleep Patterns</h3>
-              <p>BP trends across different sleep duration ranges</p>
-              <div id="bp-sleep-patterns"></div>
-            </div>
+          <div class="selected-categories">
+            <span id="category1-display">Select first category</span>
+            <span class="vs">vs</span>
+            <span id="category2-display">Select second category</span>
           </div>
         </div>
 
-        <!-- Sleep Disorder Insights -->
-        <!-- <div id="disorders-section" class="category-section">
-          <div class="chart-grid">
-            <div class="chart-card">
-              <h3>Disorder Prediction Dashboard</h3>
-              <p>Health metric profiles for each sleep disorder</p>
-              <div id="disorder-dashboard"></div>
-            </div>
-            <div class="chart-card">
-              <h3>Occupational Sleep Risk Assessment</h3>
-              <p>Sleep disorder prevalence by occupation</p>
-              <div id="occupational-risk"></div>
-            </div>
+        <div class="heatmap-section">
+          <div class="chart-card full-width">
+            <h3 id="heatmap-title">Duration vs Quality Distribution</h3>
+            <p id="heatmap-description">Distribution heatmap showing sleep duration vs sleep quality</p>
+            <div id="category-heatmap"></div>
           </div>
-        </div> -->
+        </div>
+
       </main>
 
       <div class="tooltip" id="tooltip"></div>

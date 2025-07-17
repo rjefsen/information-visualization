@@ -3,7 +3,22 @@ import * as d3 from 'd3';
 interface ScatterData {
     x: number;
     y: number;
-    label?: string;
+    personId: string;
+    personData: {
+        'Person ID': number;
+        'Age': number;
+        'Gender': string;
+        'Occupation': string;
+        'Sleep Duration': number;
+        'Quality of Sleep': number;
+        'Physical Activity Level': number;
+        'Stress Level': number;
+        'BMI Category': string;
+        'Blood Pressure': string;
+        'Heart Rate': number;
+        'Daily Steps': number;
+        'Sleep Disorder': string;
+    };
 }
 
 export class ScatterPlot {
@@ -11,16 +26,16 @@ export class ScatterPlot {
     private svg: d3.Selection<SVGSVGElement, unknown, HTMLElement, any>;
     private width: number;
     private height: number;
-    private margin = { top: 60, right: 80, bottom: 80, left: 80 };
+    private margin = { top: 60, right: 80, bottom: 100, left: 80 };
     private data: ScatterData[] = [];
     private xVariable: string = '';
     private yVariable: string = '';
 
     constructor(selector: string) {
         this.container = d3.select(selector);
-        const containerRect = (this.container.node() as HTMLElement).getBoundingClientRect();
-        this.width = Math.max(400, containerRect.width - this.margin.left - this.margin.right);
-        this.height = Math.max(300, containerRect.height - this.margin.top - this.margin.bottom);
+        // Use fixed dimensions to avoid potential sizing issues
+        this.width = 500;
+        this.height = 400;
         
         this.setupSVG();
     }
@@ -44,7 +59,22 @@ export class ScatterPlot {
                 .map(d => ({
                     x: +d[xVariable],
                     y: +d[yVariable],
-                    label: d['Person ID'] || ''
+                    personId: d['Person ID'] || '',
+                    personData: {
+                        'Person ID': +d['Person ID'],
+                        'Age': +d['Age'],
+                        'Gender': d['Gender'],
+                        'Occupation': d['Occupation'],
+                        'Sleep Duration': +d['Sleep Duration'],
+                        'Quality of Sleep': +d['Quality of Sleep'],
+                        'Physical Activity Level': +d['Physical Activity Level'],
+                        'Stress Level': +d['Stress Level'],
+                        'BMI Category': d['BMI Category'],
+                        'Blood Pressure': d['Blood Pressure'],
+                        'Heart Rate': +d['Heart Rate'],
+                        'Daily Steps': +d['Daily Steps'],
+                        'Sleep Disorder': d['Sleep Disorder']
+                    }
                 }))
                 .filter(d => !isNaN(d.x) && !isNaN(d.y));
         } catch (error) {
@@ -90,7 +120,7 @@ export class ScatterPlot {
             .attr('class', 'x-axis-label')
             .attr('text-anchor', 'middle')
             .attr('x', this.width / 2)
-            .attr('y', this.height + 35)
+            .attr('y', this.height + 45)
             .style('font-size', '12px')
             .text(this.xVariable);
 
@@ -131,8 +161,10 @@ export class ScatterPlot {
 
             tooltip.classed('visible', true)
                 .html(`
+                    <strong>Person ID:</strong> ${d.personData['Person ID']}<br/>
                     <strong>${this.xVariable}:</strong> ${d.x.toFixed(2)}<br/>
-                    <strong>${this.yVariable}:</strong> ${d.y.toFixed(2)}
+                    <strong>${this.yVariable}:</strong> ${d.y.toFixed(2)}<br/>
+                    <em>Click to see full details</em>
                 `)
                 .style('left', (event.pageX + 10) + 'px')
                 .style('top', (event.pageY - 10) + 'px');
@@ -145,6 +177,9 @@ export class ScatterPlot {
                 .attr('opacity', 0.7);
 
             tooltip.classed('visible', false);
+        })
+        .on('click', (event, d) => {
+            this.showPersonDetails(d);
         });
 
         const correlation = this.calculateCorrelation();
@@ -241,5 +276,50 @@ export class ScatterPlot {
             .style('font-size', '16px')
             .style('font-weight', 'bold')
             .text(`${this.xVariable} vs ${this.yVariable}`);
+    }
+
+    private showPersonDetails(d: ScatterData): void {
+        const personDetailsPanel = d3.select('#person-details');
+        const personInfoDiv = d3.select('#person-info');
+        
+        // Show the panel
+        personDetailsPanel.style('display', 'block');
+        
+        // Clear previous content
+        personInfoDiv.selectAll('*').remove();
+        
+        // Create info grid
+        const infoGrid = personInfoDiv.append('div')
+            .attr('class', 'person-info-grid');
+        
+        // Add all person data
+        const fields = [
+            { label: 'Person ID', value: d.personData['Person ID'] },
+            { label: 'Age', value: d.personData['Age'] },
+            { label: 'Gender', value: d.personData['Gender'] },
+            { label: 'Occupation', value: d.personData['Occupation'] },
+            { label: 'Sleep Duration', value: `${d.personData['Sleep Duration']} hrs` },
+            { label: 'Sleep Quality', value: `${d.personData['Quality of Sleep']}/10` },
+            { label: 'Physical Activity', value: `${d.personData['Physical Activity Level']}/100` },
+            { label: 'Stress Level', value: `${d.personData['Stress Level']}/10` },
+            { label: 'BMI Category', value: d.personData['BMI Category'] },
+            { label: 'Blood Pressure', value: d.personData['Blood Pressure'] },
+            { label: 'Heart Rate', value: `${d.personData['Heart Rate']} bpm` },
+            { label: 'Daily Steps', value: d.personData['Daily Steps'].toLocaleString() },
+            { label: 'Sleep Disorder', value: d.personData['Sleep Disorder'] || 'None' }
+        ];
+        
+        fields.forEach(field => {
+            const item = infoGrid.append('div')
+                .attr('class', 'person-info-item');
+            
+            item.append('span')
+                .attr('class', 'person-info-label')
+                .text(field.label + ':');
+            
+            item.append('span')
+                .attr('class', 'person-info-value')
+                .text(field.value);
+        });
     }
 }

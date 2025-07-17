@@ -184,27 +184,9 @@ export class OccupationalRisk {
             .attr('x', xScale.bandwidth() / 2)
             .attr('y', d => yScale(d.riskPercentage) - 5)
             .attr('text-anchor', 'middle')
-            .attr('font-size', '9px')
+            .attr('font-size', '11px')
             .attr('font-weight', 'bold')
             .text(d => d.riskPercentage.toFixed(0) + '%');
-
-        bars.append('circle')
-            .attr('class', 'sample-size')
-            .attr('cx', xScale.bandwidth() / 2)
-            .attr('cy', d => yScale(d.riskPercentage) + (innerHeight - yScale(d.riskPercentage)) / 2)
-            .attr('r', d => sizeScale(d.totalCount))
-            .attr('fill', 'rgba(255, 255, 255, 0.8)')
-            .attr('stroke', '#333')
-            .attr('stroke-width', 1);
-
-        bars.append('text')
-            .attr('class', 'sample-size-label')
-            .attr('x', xScale.bandwidth() / 2)
-            .attr('y', d => yScale(d.riskPercentage) + (innerHeight - yScale(d.riskPercentage)) / 2 + 3)
-            .attr('text-anchor', 'middle')
-            .attr('font-size', '8px')
-            .attr('font-weight', 'bold')
-            .text(d => d.totalCount);
 
         g.append('g')
             .attr('class', 'x-axis')
@@ -213,7 +195,7 @@ export class OccupationalRisk {
             .selectAll('text')
             .attr('transform', 'rotate(-45)')
             .style('text-anchor', 'end')
-            .style('font-size', '10px');
+            .style('font-size', '12px');
 
         g.append('g')
             .attr('class', 'y-axis')
@@ -222,85 +204,28 @@ export class OccupationalRisk {
         g.append('text')
             .attr('class', 'axis-label')
             .attr('x', innerWidth / 2)
-            .attr('y', innerHeight + 80)
+            .attr('y', innerHeight + 100)
             .attr('text-anchor', 'middle')
-            .attr('font-size', '12px')
+            .attr('font-size', '14px')
             .text('Occupation');
 
         g.append('text')
             .attr('class', 'axis-label')
             .attr('transform', 'rotate(-90)')
             .attr('x', -innerHeight / 2)
-            .attr('y', -60)
+            .attr('y', -50)
             .attr('text-anchor', 'middle')
-            .attr('font-size', '12px')
-            .text('Sleep Disorder Risk (%)');
+            .attr('font-size', '14px')
+            .text('Sleep Disorder Risk (%)');  
 
-        const legend = g.append('g')
-            .attr('class', 'legend')
-            .attr('transform', `translate(${innerWidth + 20}, 20)`);
-
-        legend.append('text')
-            .attr('x', 0)
-            .attr('y', 0)
-            .attr('font-size', '12px')
-            .attr('font-weight', 'bold')
-            .text('Risk Level');
-
-        const riskLevels = ['Low', 'Medium', 'High'];
-        const riskItems = legend.selectAll('.risk-item')
-            .data(riskLevels)
-            .enter()
-            .append('g')
-            .attr('class', 'risk-item')
-            .attr('transform', (d, i) => `translate(0, ${15 + i * 20})`);
-
-        riskItems.append('rect')
-            .attr('x', 0)
-            .attr('y', 0)
-            .attr('width', 15)
-            .attr('height', 15)
-            .attr('fill', d => riskColorScale(d) as string)
-            .attr('stroke', '#333')
-            .attr('stroke-width', 1);
-
-        riskItems.append('text')
-            .attr('x', 20)
-            .attr('y', 12)
-            .attr('font-size', '10px')
-            .text(d => d);
-
-        legend.append('text')
-            .attr('x', 0)
-            .attr('y', 90)
-            .attr('font-size', '10px')
-            .attr('font-weight', 'bold')
-            .text('Circle Size = Sample Size');
-
-        const sampleSizes = [
-            { size: d3.min(this.riskData, d => d.totalCount) || 0, label: 'Min' },
-            { size: d3.max(this.riskData, d => d.totalCount) || 0, label: 'Max' }
-        ];
-
-        sampleSizes.forEach((sample, i) => {
-            const sampleItem = legend.append('g')
-                .attr('class', 'sample-item')
-                .attr('transform', `translate(0, ${110 + i * 25})`);
-
-            sampleItem.append('circle')
-                .attr('cx', 10)
-                .attr('cy', 10)
-                .attr('r', sizeScale(sample.size))
-                .attr('fill', 'rgba(255, 255, 255, 0.8)')
-                .attr('stroke', '#333')
-                .attr('stroke-width', 1);
-
-            sampleItem.append('text')
-                .attr('x', 25)
-                .attr('y', 14)
-                .attr('font-size', '9px')
-                .text(`${sample.label}: ${sample.size}`);
-        });
+        g.append('text')
+            .attr('class', 'chart-title')
+            .attr('x', innerWidth / 2)
+            .attr('y', -15)
+            .attr('text-anchor', 'middle')
+            .style('font-size', '16px')
+            .style('font-weight', 'bold')
+            .text('Sleep Disorder Risk by Occupation');
 
         const summaryStats = g.append('g')
             .attr('class', 'summary-stats')
@@ -314,21 +239,21 @@ export class OccupationalRisk {
         summaryStats.append('text')
             .attr('x', 0)
             .attr('y', 0)
-            .attr('font-size', '10px')
+            .attr('font-size', '12px')
             .attr('font-weight', 'bold')
             .text(`Overall Risk: ${overallRisk.toFixed(1)}%`);
 
         summaryStats.append('text')
             .attr('x', 0)
-            .attr('y', 15)
-            .attr('font-size', '10px')
+            .attr('y', 18)
+            .attr('font-size', '12px')
             .text(`High Risk Jobs: ${highRiskOccupations}`);
 
         const highestRisk = this.riskData[0];
         summaryStats.append('text')
             .attr('x', 0)
-            .attr('y', 30)
-            .attr('font-size', '10px')
+            .attr('y', 36)
+            .attr('font-size', '12px')
             .text(`Highest Risk: ${highestRisk.occupation}`);
     }
 }

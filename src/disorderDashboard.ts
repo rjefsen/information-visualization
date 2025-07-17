@@ -113,15 +113,98 @@ export class DisorderDashboard {
         const g = this.svg.append('g')
             .attr('transform', `translate(${this.margin.left},${this.margin.top})`);
 
-        const colorScale = d3.scaleOrdinal(d3.schemeCategory10)
+        this.createMainChart(g, innerWidth, innerHeight);
+    }
+
+    private createMainChart(g: d3.Selection<SVGGElement, unknown, HTMLElement, any>, width: number, height: number): void {
+        const xScale = d3.scaleBand()
+            .domain(this.disorderProfiles.map(d => d.disorder))
+            .range([0, width])
+            .padding(0.2);
+
+        const yScale = d3.scaleLinear()
+            .domain([0, d3.max(this.disorderProfiles, d => d.count) || 0])
+            .range([height, 0]);
+
+        const colorScale = d3.scaleOrdinal(d3.schemeSet3)
             .domain(this.disorderProfiles.map(d => d.disorder));
 
         const tooltip = d3.select('#tooltip');
 
-        this.createRadarChart(g, innerWidth / 2, innerHeight / 2);
-        this.createBarChart(g, innerWidth / 2 + 50, 0, innerWidth / 2 - 50, innerHeight / 2);
-        this.createScatterPlot(g, 0, innerHeight / 2 + 50, innerWidth / 2, innerHeight / 2 - 50);
-        this.createSummaryStats(g, innerWidth / 2 + 50, innerHeight / 2 + 50, innerWidth / 2 - 50, innerHeight / 2 - 50);
+        g.selectAll('.disorder-bar')
+            .data(this.disorderProfiles)
+            .enter()
+            .append('rect')
+            .attr('class', 'disorder-bar')
+            .attr('x', d => xScale(d.disorder) || 0)
+            .attr('y', d => yScale(d.count))
+            .attr('width', xScale.bandwidth())
+            .attr('height', d => height - yScale(d.count))
+            .attr('fill', d => colorScale(d.disorder))
+            .attr('stroke', '#333')
+            .attr('stroke-width', 1)
+            .attr('opacity', 0.8)
+            .on('mouseover', (event, d) => {
+                tooltip.classed('visible', true)
+                    .html(`
+                        <strong>${d.disorder}</strong><br/>
+                        Count: ${d.count} people<br/>
+                        Avg Sleep Quality: ${d.avgSleepQuality.toFixed(1)}/10<br/>
+                        Avg Sleep Duration: ${d.avgSleepDuration.toFixed(1)}h<br/>
+                        Avg Stress Level: ${d.avgStressLevel.toFixed(1)}/10<br/>
+                        Avg Heart Rate: ${d.avgHeartRate.toFixed(1)} bpm
+                    `)
+                    .style('left', (event.pageX + 10) + 'px')
+                    .style('top', (event.pageY - 10) + 'px');
+            })
+            .on('mouseout', () => {
+                tooltip.classed('visible', false);
+            });
+
+        g.selectAll('.disorder-label')
+            .data(this.disorderProfiles)
+            .enter()
+            .append('text')
+            .attr('class', 'disorder-label')
+            .attr('x', d => (xScale(d.disorder) || 0) + xScale.bandwidth() / 2)
+            .attr('y', d => yScale(d.count) - 5)
+            .attr('text-anchor', 'middle')
+            .style('font-size', '12px')
+            .style('font-weight', 'bold')
+            .text(d => d.count);
+
+        g.append('g')
+            .attr('class', 'x-axis')
+            .attr('transform', `translate(0,${height})`)
+            .call(d3.axisBottom(xScale))
+            .selectAll('text')
+            .style('text-anchor', 'end')
+            .attr('dx', '-.8em')
+            .attr('dy', '.15em')
+            .attr('transform', 'rotate(-45)')
+            .style('font-size', '12px');
+
+        g.append('g')
+            .attr('class', 'y-axis')
+            .call(d3.axisLeft(yScale));
+
+        g.append('text')
+            .attr('class', 'y-axis-label')
+            .attr('transform', 'rotate(-90)')
+            .attr('y', 0 - this.margin.left + 20)
+            .attr('x', 0 - (height / 2))
+            .style('text-anchor', 'middle')
+            .style('font-size', '14px')
+            .text('Number of People');
+
+        g.append('text')
+            .attr('class', 'chart-title')
+            .attr('x', width / 2)
+            .attr('y', -15)
+            .attr('text-anchor', 'middle')
+            .style('font-size', '16px')
+            .style('font-weight', 'bold')
+            .text('Sleep Disorder Distribution');
     }
 
     private createRadarChart(g: d3.Selection<SVGGElement, unknown, HTMLElement, any>, cx: number, cy: number): void {
@@ -225,208 +308,5 @@ export class DisorderDashboard {
             .attr('font-size', '12px')
             .attr('font-weight', 'bold')
             .text('Health Metrics Profile');
-    }
-
-    private createBarChart(g: d3.Selection<SVGGElement, unknown, HTMLElement, any>, x: number, y: number, width: number, height: number): void {
-        const barG = g.append('g')
-            .attr('class', 'bar-chart')
-            .attr('transform', `translate(${x},${y})`);
-
-        const xScale = d3.scaleBand()
-            .domain(this.disorderProfiles.map(d => d.disorder))
-            .range([0, width])
-            .padding(0.1);
-
-        const yScale = d3.scaleLinear()
-            .domain([0, d3.max(this.disorderProfiles, d => d.count) || 0])
-            .range([height, 0]);
-
-        const colorScale = d3.scaleOrdinal(d3.schemeCategory10)
-            .domain(this.disorderProfiles.map(d => d.disorder));
-
-        barG.selectAll('.bar')
-            .data(this.disorderProfiles)
-            .enter()
-            .append('rect')
-            .attr('class', 'bar')
-            .attr('x', d => xScale(d.disorder) || 0)
-            .attr('y', d => yScale(d.count))
-            .attr('width', xScale.bandwidth())
-            .attr('height', d => height - yScale(d.count))
-            .attr('fill', d => colorScale(d.disorder))
-            .on('mouseover', (event, d) => {
-                const tooltip = d3.select('#tooltip');
-                tooltip.transition()
-                    .duration(200)
-                    .style('opacity', 0.9);
-                tooltip.html(`
-                    <strong>${d.disorder}</strong><br/>
-                    Count: ${d.count} people<br/>
-                    Avg Age: ${d.avgAge.toFixed(1)}<br/>
-                    Avg Sleep Quality: ${d.avgSleepQuality.toFixed(1)}<br/>
-                    Avg Heart Rate: ${d.avgHeartRate.toFixed(1)}
-                `)
-                    .style('left', (event.pageX + 10) + 'px')
-                    .style('top', (event.pageY - 28) + 'px');
-            })
-            .on('mouseout', () => {
-                d3.select('#tooltip').transition()
-                    .duration(500)
-                    .style('opacity', 0);
-            });
-
-        barG.append('g')
-            .attr('class', 'x-axis')
-            .attr('transform', `translate(0,${height})`)
-            .call(d3.axisBottom(xScale))
-            .selectAll('text')
-            .attr('transform', 'rotate(-45)')
-            .style('text-anchor', 'end')
-            .style('font-size', '10px');
-
-        barG.append('g')
-            .attr('class', 'y-axis')
-            .call(d3.axisLeft(yScale));
-
-        barG.append('text')
-            .attr('x', width / 2)
-            .attr('y', -10)
-            .attr('text-anchor', 'middle')
-            .attr('font-size', '12px')
-            .attr('font-weight', 'bold')
-            .text('Disorder Prevalence');
-    }
-
-    private createScatterPlot(g: d3.Selection<SVGGElement, unknown, HTMLElement, any>, x: number, y: number, width: number, height: number): void {
-        const scatterG = g.append('g')
-            .attr('class', 'scatter-plot')
-            .attr('transform', `translate(${x},${y})`);
-
-        const xScale = d3.scaleLinear()
-            .domain(d3.extent(this.disorderProfiles, d => d.avgSleepDuration) as [number, number])
-            .range([0, width]);
-
-        const yScale = d3.scaleLinear()
-            .domain(d3.extent(this.disorderProfiles, d => d.avgSleepQuality) as [number, number])
-            .range([height, 0]);
-
-        const sizeScale = d3.scaleLinear()
-            .domain(d3.extent(this.disorderProfiles, d => d.count) as [number, number])
-            .range([5, 20]);
-
-        const colorScale = d3.scaleOrdinal(d3.schemeCategory10)
-            .domain(this.disorderProfiles.map(d => d.disorder));
-
-        scatterG.selectAll('.dot')
-            .data(this.disorderProfiles)
-            .enter()
-            .append('circle')
-            .attr('class', 'dot')
-            .attr('cx', d => xScale(d.avgSleepDuration))
-            .attr('cy', d => yScale(d.avgSleepQuality))
-            .attr('r', d => sizeScale(d.count))
-            .attr('fill', d => colorScale(d.disorder))
-            .attr('opacity', 0.7)
-            .attr('stroke', '#333')
-            .attr('stroke-width', 1);
-
-        scatterG.append('g')
-            .attr('class', 'x-axis')
-            .attr('transform', `translate(0,${height})`)
-            .call(d3.axisBottom(xScale));
-
-        scatterG.append('g')
-            .attr('class', 'y-axis')
-            .call(d3.axisLeft(yScale));
-
-        scatterG.append('text')
-            .attr('x', width / 2)
-            .attr('y', height + 35)
-            .attr('text-anchor', 'middle')
-            .attr('font-size', '10px')
-            .text('Avg Sleep Duration');
-
-        scatterG.append('text')
-            .attr('transform', 'rotate(-90)')
-            .attr('x', -height / 2)
-            .attr('y', -35)
-            .attr('text-anchor', 'middle')
-            .attr('font-size', '10px')
-            .text('Avg Sleep Quality');
-
-        scatterG.append('text')
-            .attr('x', width / 2)
-            .attr('y', -10)
-            .attr('text-anchor', 'middle')
-            .attr('font-size', '12px')
-            .attr('font-weight', 'bold')
-            .text('Sleep Duration vs Quality');
-    }
-
-    private createSummaryStats(g: d3.Selection<SVGGElement, unknown, HTMLElement, any>, x: number, y: number, width: number, height: number): void {
-        const statsG = g.append('g')
-            .attr('class', 'summary-stats')
-            .attr('transform', `translate(${x},${y})`);
-
-        statsG.append('text')
-            .attr('x', 0)
-            .attr('y', 0)
-            .attr('font-size', '12px')
-            .attr('font-weight', 'bold')
-            .text('Summary Statistics');
-
-        const totalPeople = this.data.length;
-        const peopleWithDisorders = this.data.filter(d => d['Sleep Disorder'] !== 'None').length;
-        const disorderRate = (peopleWithDisorders / totalPeople) * 100;
-
-        const stats = [
-            `Total People: ${totalPeople}`,
-            `People with Disorders: ${peopleWithDisorders}`,
-            `Disorder Rate: ${disorderRate.toFixed(1)}%`,
-            '',
-            'Most Common Disorder:',
-            `${this.disorderProfiles.reduce((a, b) => a.count > b.count ? a : b).disorder}`
-        ];
-
-        stats.forEach((stat, i) => {
-            statsG.append('text')
-                .attr('x', 0)
-                .attr('y', 20 + i * 15)
-                .attr('font-size', '10px')
-                .text(stat);
-        });
-
-        const legend = statsG.append('g')
-            .attr('class', 'legend')
-            .attr('transform', `translate(0, ${stats.length * 15 + 30})`);
-
-        const colorScale = d3.scaleOrdinal(d3.schemeCategory10)
-            .domain(this.disorderProfiles.map(d => d.disorder));
-
-        legend.append('text')
-            .attr('x', 0)
-            .attr('y', 0)
-            .attr('font-size', '10px')
-            .attr('font-weight', 'bold')
-            .text('Disorder Types:');
-
-        this.disorderProfiles.forEach((profile, i) => {
-            const legendItem = legend.append('g')
-                .attr('class', 'legend-item')
-                .attr('transform', `translate(0, ${15 + i * 15})`);
-
-            legendItem.append('rect')
-                .attr('x', 0)
-                .attr('y', -8)
-                .attr('width', 12)
-                .attr('height', 12)
-                .attr('fill', colorScale(profile.disorder));
-
-            legendItem.append('text')
-                .attr('x', 16)
-                .attr('y', 0)
-                .attr('font-size', '9px')
-                .text(`${profile.disorder} (${profile.count})`);
-        });
     }
 }

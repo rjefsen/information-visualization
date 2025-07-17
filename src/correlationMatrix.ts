@@ -12,7 +12,7 @@ export class CorrelationMatrix {
     private svg: d3.Selection<SVGSVGElement, unknown, HTMLElement, any>;
     private width: number;
     private height: number;
-    private margin = { top: 80, right: 80, bottom: 140, left: 80 };
+    private margin = { top: 80, right: 80, bottom: 140, left: 120 };
     private data: CorrelationData[] = [];
     private variables: string[] = [];
     private correlationMatrix: number[][] = [];
@@ -20,11 +20,17 @@ export class CorrelationMatrix {
 
     constructor(selector: string, scatterSelector: string = '#correlation-scatter') {
         this.container = d3.select(selector);
-        const containerRect = (this.container.node() as HTMLElement).getBoundingClientRect();
-        const size = Math.min(Math.max(400, containerRect.width - this.margin.left - this.margin.right), 
-                             Math.max(400, containerRect.height - this.margin.top - this.margin.bottom));
-        this.width = size;
-        this.height = size;
+        console.log('CorrelationMatrix container found:', this.container.size());
+        
+        const containerElement = this.container.node() as HTMLElement;
+        if (!containerElement) {
+            console.error('Container element not found for selector:', selector);
+            return;
+        }
+        
+        // Use smaller size to fit within frame with margins
+        this.width = 400;
+        this.height = 400;
         
         this.scatterPlot = new ScatterPlot(scatterSelector);
         this.setupSVG();
@@ -123,8 +129,9 @@ export class CorrelationMatrix {
             .range([0, this.height])
             .padding(0.02);
 
-        const colorScale = d3.scaleSequential(d3.interpolateRdBu)
-            .domain([1, -1]);
+        const colorScale = d3.scaleSequential()
+            .domain([-1, 1])
+            .interpolator(t => d3.interpolateRdBu(1 - t));
 
         g.append('g')
             .attr('class', 'x-axis')
@@ -156,7 +163,7 @@ export class CorrelationMatrix {
             .attr('width', xScale.bandwidth())
             .attr('height', yScale.bandwidth())
             .attr('fill', d => colorScale(d.correlation))
-            .attr('stroke', '#fff')
+            .attr('stroke', '#000')
             .attr('stroke-width', 1)
             .attr('opacity', 0);
 
@@ -211,6 +218,9 @@ export class CorrelationMatrix {
             })
             .on('click', async (event, d) => {
                 if (d.variable1 !== d.variable2) {
+                    const descriptionElement = d3.select('#scatter-description');
+                    descriptionElement.text(`Relationship between ${d.variable1} and ${d.variable2}`);
+                    
                     await this.scatterPlot.loadData(d.variable1, d.variable2);
                     await this.scatterPlot.render();
                 }
@@ -250,7 +260,10 @@ export class CorrelationMatrix {
             .data(d3.range(-1, 1.01, 0.1))
             .enter().append('stop')
             .attr('offset', d => `${(d + 1) * 50}%`)
-            .attr('stop-color', d => d3.interpolateRdBu(1 - (d + 1) / 2));
+            .attr('stop-color', d => {
+                const normalized = (d + 1) / 2;
+                return d3.interpolateRdBu(1 - normalized);
+            });
 
         legend.append('rect')
             .attr('width', legendWidth)
@@ -260,27 +273,6 @@ export class CorrelationMatrix {
         legend.append('g')
             .attr('transform', `translate(0, ${legendHeight})`)
             .call(legendAxis);
-
-        legend.append('text')
-            .attr('x', 0)
-            .attr('y', legendHeight + 25)
-            .style('text-anchor', 'start')
-            .style('font-size', '10px')
-            .text('Strong Negative');
-
-        legend.append('text')
-            .attr('x', legendWidth)
-            .attr('y', legendHeight + 25)
-            .style('text-anchor', 'end')
-            .style('font-size', '10px')
-            .text('Strong Positive');
-
-        legend.append('text')
-            .attr('x', legendWidth / 2)
-            .attr('y', legendHeight + 25)
-            .style('text-anchor', 'middle')
-            .style('font-size', '10px')
-            .text('No Correlation');
     }
 
     private addTitle(g: d3.Selection<SVGGElement, unknown, HTMLElement, any>): void {
